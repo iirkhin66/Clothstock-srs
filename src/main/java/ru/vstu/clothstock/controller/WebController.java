@@ -1,10 +1,13 @@
 package ru.vstu.clothstock.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.vstu.clothstock.model.Product;
+import ru.vstu.clothstock.model.User;
+import ru.vstu.clothstock.repository.UserRepository;
 import ru.vstu.clothstock.service.ProductService;
 
 @Controller
@@ -12,6 +15,8 @@ import ru.vstu.clothstock.service.ProductService;
 public class WebController {
 
     private final ProductService productService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -60,7 +65,21 @@ public class WebController {
     }
 
     @GetMapping("/users")
-    public String usersPage() {
+    public String usersPage(Model model) {
+        model.addAttribute("users", userRepository.findAll());
         return "users";
+    }
+
+    @PostMapping("/users/add")
+    public String addUser(@ModelAttribute User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+        return "redirect:/users";
+    }
+
+    @PostMapping("/users/{id}/delete")
+    public String deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return "redirect:/users";
     }
 }

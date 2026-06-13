@@ -13,18 +13,20 @@
         <tr>
             <th>Артикул</th>
             <th>Название</th>
-            <th>Цена (Руб)</th>
+            <th>Цена закупки (Руб)</th>
+            <th>Цена продажи (Руб)</th>
             <th>Статус</th>
-            <th>Прибыль</th>
+            <th>Чистая прибыль</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="product : ${products}" th:if="${product.status == 'Продан'}">
             <td th:text="${product.sku}"></td>
             <td th:text="${product.name}"></td>
+            <td th:text="${product.purchasePrice}"></td>
             <td th:text="${product.price}"></td>
             <td th:text="${product.status}"></td>
-            <td class="text-success" th:text="${product.price}"></td>
+            <td class="text-success" th:text="${product.price - product.purchasePrice}"></td>
         </tr>
         </tbody>
     </table>

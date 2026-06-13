@@ -38,18 +38,20 @@ public class ExportController {
         document.open();
         document.add(new Paragraph("Profit/Loss Report - ClothStock\n\n"));
 
-        PdfPTable table = new PdfPTable(4);
+        PdfPTable table = new PdfPTable(5);
         table.addCell(new PdfPCell(new Phrase("SKU")));
         table.addCell(new PdfPCell(new Phrase("Name")));
-        table.addCell(new PdfPCell(new Phrase("Price")));
-        table.addCell(new PdfPCell(new Phrase("Status")));
+        table.addCell(new PdfPCell(new Phrase("Purchase Price")));
+        table.addCell(new PdfPCell(new Phrase("Sale Price")));
+        table.addCell(new PdfPCell(new Phrase("Net Profit")));
 
         for (Product product : products) {
             if ("Продан".equals(product.getStatus())) {
                 table.addCell(product.getSku());
                 table.addCell(product.getName());
+                table.addCell(String.valueOf(product.getPurchasePrice()));
                 table.addCell(String.valueOf(product.getPrice()));
-                table.addCell(product.getStatus());
+                table.addCell(String.valueOf(product.getPrice() - product.getPurchasePrice()));
             }
         }
 
@@ -69,7 +71,7 @@ public class ExportController {
             response.getOutputStream().write(0xBB);
             response.getOutputStream().write(0xBF);
 
-            String[] header = {"SKU", "Name", "Price", "Status"};
+            String[] header = {"SKU", "Name", "Purchase Price", "Sale Price", "Net Profit"};
             writer.writeNext(header);
 
             for (Product product : products) {
@@ -77,8 +79,9 @@ public class ExportController {
                     String[] data = {
                             product.getSku(),
                             product.getName(),
+                            String.valueOf(product.getPurchasePrice()),
                             String.valueOf(product.getPrice()),
-                            product.getStatus()
+                            String.valueOf(product.getPrice() - product.getPurchasePrice())
                     };
                     writer.writeNext(data);
                 }

@@ -32,7 +32,7 @@
         <a href="/products/add" class="btn btn-success">Добавить товар</a>
     </div>
 
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped align-middle">
         <thead>
         <tr>
             <th>Артикул</th>
@@ -53,7 +53,14 @@
             <td th:text="${product.size}"></td>
             <td th:text="${product.price}"></td>
             <td th:text="${product.stock}"></td>
-            <td th:text="${product.status}"></td>
+            <td>
+                <span th:text="${product.status}"></span>
+                <div th:if="${product.status == 'На складе' and product.statusUpdatedAt != null}"
+                     class="stock-timer badge bg-warning text-dark d-block mt-1"
+                     th:data-updated-at="${product.statusUpdatedAt}"
+                     th:data-id="${product.id}">
+                </div>
+            </td>
             <td sec:authorize="hasRole('MANAGER')">
                 <form method="post" th:action="@{/products/{id}/status(id=${product.id})}" class="d-inline">
                     <select name="status" class="form-select form-select-sm d-inline w-auto">
@@ -71,5 +78,44 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const timers = document.querySelectorAll('.stock-timer');
+
+        function updateTimers() {
+            const now = new Date();
+            timers.forEach(timer => {
+                if (timer.dataset.processed === 'true') return;
+
+                const updatedStr = timer.getAttribute('data-updated-at');
+                if (!updatedStr) return;
+
+                const updatedAt = new Date(updatedStr);
+                const targetTime = new Date(updatedAt.getTime() + 30 * 60000);
+                const diffMs = targetTime - now;
+
+                if (diffMs <= 0) {
+                    timer.textContent = "Перемещение...";
+                    timer.dataset.processed = 'true';
+                    const productId = timer.getAttribute('data-id');
+
+                    fetch(`/products/${productId}/status?status=В торговом зале`, {
+                        method: 'POST'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    const mins = Math.floor(diffMs / 60000);
+                    const secs = Math.floor((diffMs % 60000) / 1000);
+                    timer.textContent = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+            });
+        }
+
+        setInterval(updateTimers, 1000);
+        updateTimers();
+    });
+</script>
 </body>
 </html>

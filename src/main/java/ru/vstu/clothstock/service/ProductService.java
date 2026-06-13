@@ -7,6 +7,7 @@ import ru.vstu.clothstock.model.Product;
 import ru.vstu.clothstock.repository.HistoryLogRepository;
 import ru.vstu.clothstock.repository.ProductRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,6 +35,11 @@ public class ProductService {
 
     public void saveProduct(Product product) {
         boolean isNew = product.getId() == null;
+        if (isNew) {
+            product.setStatusUpdatedAt(LocalDateTime.now());
+        } else if (product.getStatusUpdatedAt() == null) {
+            product.setStatusUpdatedAt(LocalDateTime.now());
+        }
         productRepository.save(product);
         logAction(isNew ? "Добавлен новый товар: " + product.getName() : "Обновлен товар: " + product.getName());
         checkStockAndAlert(product);
@@ -57,6 +63,10 @@ public class ProductService {
                 throw new RuntimeException("Невозможно продать товар, остаток равен 0");
             }
             product.setStock(product.getStock() - 1);
+        }
+
+        if ("На складе".equals(newStatus)) {
+            product.setStatusUpdatedAt(LocalDateTime.now());
         }
 
         product.setStatus(newStatus);

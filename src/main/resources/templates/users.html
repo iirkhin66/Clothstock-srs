@@ -1,15 +1,98 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Пользователи - ClothStock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mt-5">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/products">ClothStock</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/products">Товары</a></li>
+                <li class="nav-item" sec:authorize="hasRole('MANAGER')"><a class="nav-link" href="/report">Отчет</a></li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')"><a class="nav-link" href="/users">Пользователи</a></li>
+            </ul>
+            <form class="d-flex" method="get" action="/products">
+                <input class="form-control me-2" type="search" name="query" placeholder="Поиск (Артикул, Имя)">
+                <button class="btn btn-outline-light" type="submit">Поиск</button>
+            </form>
+            <form method="post" action="/logout" class="ms-3">
+                <button class="btn btn-danger" type="submit">Выход</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
     <h2>Управление пользователями</h2>
-    <div class="alert alert-info">В MVP-версии управление учетными записями осуществляется администратором баз данных через консоль PostgreSQL.</div>
-    <a href="/products" class="btn btn-primary">Вернуться к товарам</a>
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">Добавить сотрудника</button>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Имя</th>
+            <th>Email</th>
+            <th>Роль</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}"></td>
+            <td th:text="${user.name}"></td>
+            <td th:text="${user.email}"></td>
+            <td th:text="${user.role}"></td>
+            <td>
+                <form method="post" th:action="@{/users/{id}/delete(id=${user.id})}" th:if="${user.role != 'ROLE_ADMIN'}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
+
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/users/add">
+                <div class="modal-header">
+                    <h5 class="modal-title">Новый сотрудник</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Роль</label>
+                        <select name="role" class="form-select">
+                            <option value="ROLE_MANAGER">Менеджер</option>
+                            <option value="ROLE_CASHIER">Кассир</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

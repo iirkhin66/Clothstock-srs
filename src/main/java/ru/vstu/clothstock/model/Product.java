@@ -1,13 +1,13 @@
 package ru.vstu.clothstock.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
@@ -16,14 +16,19 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String sku; // Артикул
+    @Column(nullable = false, unique = true)
+    private String sku;
 
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String category;
+
     private String size;
+
+    @Column(nullable = false)
+    private Double purchasePrice;
 
     @Column(nullable = false)
     private Double price;
@@ -33,4 +38,6 @@ public class Product {
 
     @Column(nullable = false)
     private String status;
+
+    private LocalDateTime statusUpdatedAt;
 }
